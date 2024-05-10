@@ -6,7 +6,7 @@
 /*   By: lworden <lworden@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/05 21:02:02 by lworden           #+#    #+#             */
-/*   Updated: 2024/05/06 22:37:59 by lworden          ###   ########.fr       */
+/*   Updated: 2024/05/10 22:16:30 by lworden          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,8 @@ typedef struct t_vars
 	double	originy;
 	double	scale;
 	double	z_s;
+	int		height;
+	int		width;
 	int		toggle_grid;
 	int		toggle_plane;
 	int		toggle_z;
@@ -89,6 +91,13 @@ typedef struct t_vars
 	void	*mlx_ptr;
 	void	*win_ptr;
 	void	*img;
+	char	*addr;
+	int		bits_per_pixel;
+	int		size_line;
+	int		endian;
+	int 	dark_green;
+	int		black;
+	int		white;
 	t_maps	*m;
 
 }	t_vars;
@@ -111,16 +120,16 @@ double	gradient(double x, double x2, double y, double y2);
 void	calc_vect(t_maps *maps, t_vars *p_vars);
 int		calc_axes(t_maps *maps, char *filename);
 void	free_all(t_read *r_vars, int end);
-void	draw_vecs(t_maps *maps, void *mlx_ptr, void *win_ptr);
-void	draw_x_edges(t_maps *maps, void *mlx_ptr, void *win_ptr);
-void	draw_y_edges(t_maps *maps, void *mlx_ptr, void *win_ptr);
-void	flat_flip(t_maps *maps, t_edge *ed, void *mlx_ptr, void *win_ptr);
-void	flip_y_edge(t_edge *ed, t_maps *maps, void *mlx_ptr, void *win_ptr);
-void	draw_x_plane(t_maps *maps, void *mlx_ptr, void *win_ptr);
-void	draw_y_plane(t_maps *maps, void *mlx_ptr, void *win_ptr);
+void	draw_vecs(t_vars *p_vars, void *mlx_ptr, void *win_ptr);
+void	draw_x_edges(t_vars *p_vars, void *mlx_ptr, void *win_ptr);
+void	draw_y_edges(t_vars *p_vars, void *mlx_ptr, void *win_ptr);
+void	flat_flip(t_vars *p_vars, t_edge *ed, void *mlx_ptr, void *win_ptr);
+void	flip_y_edge(t_edge *ed, t_vars *p_vars, void *mlx_ptr, void *win_ptr);
+void	draw_x_plane(t_vars *p_vars, void *mlx_ptr, void *win_ptr);
+void	draw_y_plane(t_vars *p_vars, void *mlx_ptr, void *win_ptr);
 void	ed_setup(t_maps *maps, t_edge *ed, int key);
 
-int	draw_image(t_maps *maps, t_vars *p_vars);
-
+void	draw_image(t_vars *p_vars, double x, double y, int color);
+void	fill(t_vars *p_vars, char *addr);
 
 #endif

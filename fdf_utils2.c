@@ -6,50 +6,47 @@
 /*   By: lworden <lworden@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/05 20:53:59 by lworden           #+#    #+#             */
-/*   Updated: 2024/05/06 21:23:07 by lworden          ###   ########.fr       */
+/*   Updated: 2024/05/10 22:27:09 by lworden          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fdf.h"
 
-void	draw_vecs(t_maps *maps, void *mlx_ptr, void *win_ptr)
+void	draw_vecs(t_vars *p_vars, void *mlx_ptr, void *win_ptr)
 {
 	int	i;
 	int	j;
 
 	i = 0;
-	while (i < maps->yaxis)
+	while (i < p_vars->m->yaxis)
 	{
 		j = 0;
-		while (j < maps->xaxis)
+		while (j < p_vars->m->xaxis)
 		{
-			mlx_pixel_put(mlx_ptr, win_ptr, (int)maps->map_vec[i][j].x,
-				(int)maps->map_vec[i][j].y, 0x00FFFFFF);
+			draw_image(p_vars, p_vars->m->map_vec[i][j].x, p_vars->m->map_vec[i][j].y, p_vars->white);
 			j++;
 		}
 		i++;
 	}
 }
 
-void	draw_x_plane(t_maps *maps, void *mlx_ptr, void *win_ptr)
+void	draw_x_plane(t_vars *p_vars, void *mlx_ptr, void *win_ptr)
 {
 	t_edge	ed;
 
-	ed.col = 0x00003300;
 	ed.i = 0;
-	while (ed.i < maps->yaxis)
+	while (ed.i < p_vars->m->yaxis)
 	{
 		ed.j = 0;
-		while (ed.j < maps->xaxis - 1)
+		while (ed.j < p_vars->m->xaxis - 1)
 		{
-			ed_setup(maps, &ed, 0);
+			ed_setup(p_vars->m, &ed, 0);
 			ed.g_o = gradient(ed.exx, ed.exx2, ed.yy, ed.xy2);
-			ed.x = maps->map_vec[ed.i][ed.j].x;
-			ed.y_o = maps->map_vec[ed.i][ed.j].y_o;
-			while (ed.x < maps->map_vec[ed.i][ed.j + 1].x)
+			ed.x = p_vars->m->map_vec[ed.i][ed.j].x;
+			ed.y_o = p_vars->m->map_vec[ed.i][ed.j].y_o;
+			while (ed.x < p_vars->m->map_vec[ed.i][ed.j + 1].x)
 			{
-				mlx_pixel_put(mlx_ptr, win_ptr,
-					(int)ed.x, (int)ed.y_o, ed.col);
+				draw_image(p_vars, ed.x, ed.y_o, p_vars->dark_green);
 				ed.x++;
 				ed.y_o += ed.g_o;
 			}
@@ -59,25 +56,23 @@ void	draw_x_plane(t_maps *maps, void *mlx_ptr, void *win_ptr)
 	}
 }
 
-void	draw_y_plane(t_maps *maps, void *mlx_ptr, void *win_ptr)
+void	draw_y_plane(t_vars *p_vars, void *mlx_ptr, void *win_ptr)
 {
 	t_edge	ed;
 
-	ed.col = 0x00003300;
 	ed.i = 0;
-	while (ed.i < maps->yaxis - 1)
+	while (ed.i < p_vars->m->yaxis - 1)
 	{
 		ed.j = 0;
-		while (ed.j < maps->xaxis)
+		while (ed.j < p_vars->m->xaxis)
 		{
-			ed_setup(maps, &ed, 1);
+			ed_setup(p_vars->m, &ed, 1);
 			ed.g_o = gradient(ed.yy, ed.yy2, ed.exx, ed.eyx2);
-			ed.x = maps->map_vec[ed.i][ed.j].x;
-			ed.y_o = maps->map_vec[ed.i][ed.j].y_o;
-			while (ed.y_o < maps->map_vec[ed.i + 1][ed.j].y_o)
+			ed.x = p_vars->m->map_vec[ed.i][ed.j].x;
+			ed.y_o = p_vars->m->map_vec[ed.i][ed.j].y_o;
+			while (ed.y_o < p_vars->m->map_vec[ed.i + 1][ed.j].y_o)
 			{
-				mlx_pixel_put(mlx_ptr, win_ptr, (int)ed.x,
-					(int)ed.y_o, ed.col);
+				draw_image(p_vars, ed.x, ed.y_o, p_vars->dark_green);
 				ed.x += ed.g_o;
 				ed.y_o++;
 			}
@@ -90,18 +85,19 @@ void	draw_y_plane(t_maps *maps, void *mlx_ptr, void *win_ptr)
 int	draw(t_vars *p_vars)
 {
 	calc_vect(p_vars->m, p_vars);
-	mlx_clear_window(p_vars->mlx_ptr, p_vars->win_ptr);
+	fill(p_vars, p_vars->addr);
 	if (0 < p_vars->toggle_plane)
 	{
-		draw_x_plane(p_vars->m, p_vars->mlx_ptr, p_vars->win_ptr);
-		draw_y_plane(p_vars->m, p_vars->mlx_ptr, p_vars->win_ptr);
+		draw_x_plane(p_vars, p_vars->mlx_ptr, p_vars->win_ptr);
+		draw_y_plane(p_vars, p_vars->mlx_ptr, p_vars->win_ptr);
 	}
 	if (0 < p_vars->toggle_grid)
 	{
-		draw_x_edges(p_vars->m, p_vars->mlx_ptr, p_vars->win_ptr);
-		draw_y_edges(p_vars->m, p_vars->mlx_ptr, p_vars->win_ptr);
+		draw_x_edges(p_vars, p_vars->mlx_ptr, p_vars->win_ptr);
+		draw_y_edges(p_vars, p_vars->mlx_ptr, p_vars->win_ptr);
 	}
-	draw_vecs(p_vars->m, p_vars->mlx_ptr, p_vars->win_ptr);
+	mlx_put_image_to_window(p_vars->mlx_ptr, p_vars->win_ptr, p_vars->img, 0, 0);
+	draw_vecs(p_vars, p_vars->mlx_ptr, p_vars->win_ptr);
 	return (0);
 }
 

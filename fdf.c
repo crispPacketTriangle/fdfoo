@@ -6,7 +6,7 @@
 /*   By: lworden <lworden@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/05 20:27:28 by lworden           #+#    #+#             */
-/*   Updated: 2024/05/06 23:07:31 by lworden          ###   ########.fr       */
+/*   Updated: 2024/05/10 22:45:11 by lworden          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,9 @@ int	main(int argc, char **argv)
 	calc_vect(&maps, &p_vars);
 	if (!p_vars.mlx_ptr)
 		return (1);
-	p_vars.win_ptr = mlx_new_window(p_vars.mlx_ptr, 1200, 800, "cpt");
-	//draw(&p_vars);
-	draw_image(&maps, &p_vars);
+	p_vars.win_ptr = mlx_new_window(p_vars.mlx_ptr, p_vars.width, p_vars.height, "cpt");
+	draw(&p_vars);
+	//draw_image(&maps, &p_vars);
 	mlx_hook(p_vars.win_ptr, 3, 1L << 1, &key_up, &p_vars);
 	mlx_hook(p_vars.win_ptr, 2, 1L << 0, &key_down, &p_vars);
 	mlx_hook(p_vars.win_ptr, 17, StructureNotifyMask, &terminator, &p_vars);
@@ -49,6 +49,8 @@ void	init_vars(t_vars *p_vars, t_maps *maps)
 {
 	p_vars->m = maps;
 	p_vars->scale = 8;
+	p_vars->height = 800;
+	p_vars->width = 1200;
 	p_vars->originx = 1200.0;
 	p_vars->originy = 100.0;
 	p_vars->toggle_plane = -1;
@@ -56,7 +58,14 @@ void	init_vars(t_vars *p_vars, t_maps *maps)
 	p_vars->toggle_key = 0;
 	p_vars->z_s = 8;
 	p_vars->toggle_z = -1;
-	p_vars->img = mlx_new_image(p_vars->mlx_ptr, 1200, 1200);
+	p_vars->img = mlx_new_image(p_vars->mlx_ptr, 1200, 800);
+	p_vars->bits_per_pixel = 8;
+	p_vars->size_line = 1200;
+	p_vars->endian = 0;
+	p_vars->addr = mlx_get_data_addr(p_vars->img, &p_vars->bits_per_pixel, &p_vars->size_line, &p_vars->endian);
+	p_vars->dark_green = mlx_get_color_value(p_vars->mlx_ptr, 0x00003300);
+	p_vars->white = mlx_get_color_value(p_vars->mlx_ptr, 0x00FFFFFF);
+	p_vars->black = mlx_get_color_value(p_vars->mlx_ptr, 0x00000000);
 	maps->xaxis = 0;
 	maps->yaxis = 0;
 }
@@ -76,7 +85,7 @@ void	calc_vect(t_maps *maps, t_vars *p_vars)
 		while (j < maps->xaxis)
 		{
 			maps->map_vec[i][j].x = org.x + (j * p_vars->scale);
-			maps->map_vec[i][j].y = org.y + (j * (p_vars->scale / 4))   // implement way to adjust at run time
+			maps->map_vec[i][j].y = org.y + (j * (p_vars->scale / 2))   // implement way to adjust at run time
 				+ (maps->map_vec[i][j].z * -1 * (p_vars->scale / p_vars->z_s));
 			maps->map_vec[i][j].y_o = org.y + (j * (p_vars->scale / 2));
 			j++;
@@ -111,106 +120,19 @@ int	terminator(t_vars *p_vars)
 	exit(0);
 }
 
-// typedef struct vv
-// {
-// 	void	*mlx;
-// 	void	*win;
-// 	void	*img;
-// 	char	*addr;
-// } vv;
-
-
-int	draw_image(t_maps *maps, t_vars *p_vars)
+void	draw_image(t_vars *p_vars, double x, double y, int color)
 {
+	int		ofs;
 
-	calc_vect(p_vars->m, p_vars);
-	//mlx_clear_window(p_vars->mlx_ptr, p_vars->win_ptr);
-	
-	vv	v;
-	int	bits_per_pixel;
-	int	size_line;
-	int	endian;
-	int color_int;
-	int	black;
-
-	bits_per_pixel = 8;
-	size_line = 1200;
-	endian = 0;
-
-
-	//p_vars->img = mlx_new_image(p_vars->mlx_ptr, 1200, 1200);
-
-	v.addr = mlx_get_data_addr(p_vars->img, &bits_per_pixel, &size_line, &endian);
-
-	color_int = mlx_get_color_value(p_vars->mlx_ptr, 0x00FFFFFF);
-	black = mlx_get_color_value(p_vars->mlx_ptr, 0x00000000);
-
-	// for (int i = 0; i < (1200 * 800) * 4; i+=)
-	// {
-	// 	//if (i % 1200 == 0)
-	// 		*((unsigned int *)(v.addr + i)) = color_int;
-	// }
-	
-// 	t_edge	ed;
-
-// 	int	i;
-// 	ed.col = 0x00003300;
-// 	ed.i = 0;
-// 	while (ed.i < maps->yaxis - 1)
-// 	{
-// 		ed.j = 0;
-// 		while (ed.j < maps->xaxis)
-// 		{
-// 			ed_setup(maps, &ed, 1);
-// 			ed.g_o = gradient(ed.yy, ed.yy2, ed.exx, ed.eyx2);
-// 			ed.x = maps->map_vec[ed.i][ed.j].x;
-// 			ed.y_o = maps->map_vec[ed.i][ed.j].y_o;
-// 			while (ed.y_o < maps->map_vec[ed.i + 1][ed.j].y_o)
-// 			{
-// 				//mlx_pixel_put(mlx_ptr, win_ptr, (int)ed.x,
-// 				//	(int)ed.y_o, ed.col);
-// 				printf("%d\n", (int)ed.y_o);
-// 				i = ((int)ed.y_o * 1200) + ((int)ed.x);  
-// 				*((unsigned int *)(v.addr + i)) = color_int;
-// 				ed.x += ed.g_o;
-// 				ed.y_o++;
-// 			}
-// 			ed.j++;
-// 		}
-// 		ed.i++;
-// 	}
-	
-	int ofs;
-	int	i;
-	int	j;
-
-	for (int i = 0; i < (1200 * 800) * 4; i++)
-	{
-			*((unsigned int *)(v.addr + i)) = black;
-	}
-
-	// add limits to stop loop trying to draw pixels out side of image
-	// if < y == n ...
-	i = 0;
-	while (i < maps->yaxis - 1)
-	{
-		j = 0;
-		while (j < maps->xaxis)
-		{
-			// mlx_pixel_put(p_vars->mlx_ptr, p_vars->win_ptr, (int)maps->map_vec[i][j].x,
-			// 	(int)maps->map_vec[i][j].y, 0x00FFFFFF);
-			ofs = ((int)maps->map_vec[i][j].y * 4800) + ((int)maps->map_vec[i][j].x * 2);
-			//printf("%d\n", (int)maps->map_vec[i][j].x);
- 			*((unsigned int *)(v.addr + ofs)) = color_int;
-			j++;
-		}
-		i++;
-	}
-
-	//* (data->img.bits_per_pixel / 8
-
-	mlx_put_image_to_window(p_vars->mlx_ptr, p_vars->win_ptr, p_vars->img, 0, 0);
-
-	return (0);	
+	ofs = ((int)y * (p_vars->width * 4)) + ((int)x * 4);
+	if (ofs >= 0 && ofs <= p_vars->height * (p_vars->width * 4))
+		*((unsigned int *)(p_vars->addr + ofs)) = color;
 }
 
+void	fill(t_vars *p_vars, char *addr)
+{
+	for (int i = 0; i < (1200 * 800) * 4; i++)
+	{
+		*((unsigned int *)(addr + i)) = p_vars->black;
+	}
+}
