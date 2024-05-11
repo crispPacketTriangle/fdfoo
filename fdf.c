@@ -6,7 +6,7 @@
 /*   By: lworden <lworden@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/05 20:27:28 by lworden           #+#    #+#             */
-/*   Updated: 2024/05/10 22:45:11 by lworden          ###   ########.fr       */
+/*   Updated: 2024/05/11 16:02:58 by lworden          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,7 @@ void	draw_image(t_vars *p_vars, double x, double y, int color)
 	int		ofs;
 
 	ofs = ((int)y * (p_vars->width * 4)) + ((int)x * 4);
-	if (ofs >= 0 && ofs <= p_vars->height * (p_vars->width * 4))
+	if (ofs >= 0 && ofs <= p_vars->height * (p_vars->width * 4) && (int)x > 0 && (int)x < p_vars->width)
 		*((unsigned int *)(p_vars->addr + ofs)) = color;
 }
 
